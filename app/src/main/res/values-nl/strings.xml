@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">LighPDF</string>
+    <string name="light_pdf">LICHT PDF</string>
+    <string name="open_document">DOCUMENT OPENEN</string>
+    <string name="save_copy">KOPIE OPSLAAN</string>
+    <string name="zoom_in">+</string>
+    <string name="zoom_out">-</string>
+    <string name="close">SLUITEN</string>
+</resources>
