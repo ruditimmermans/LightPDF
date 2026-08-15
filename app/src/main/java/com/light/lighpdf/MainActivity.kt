@@ -25,6 +25,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ContentCopy
+import androidx.compose.material.icons.rounded.FileOpen
+import androidx.compose.material.icons.rounded.InvertColors
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.ViewStream
+import androidx.compose.material.icons.rounded.ZoomIn
+import androidx.compose.material.icons.rounded.ZoomOut
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -49,6 +61,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.light.lighpdf.ui.theme.LighPDFTheme
 
@@ -77,6 +90,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = null) {
     val context = LocalContext.current
+    val userPreferences by viewModel.userPreferencesFlow.collectAsStateWithLifecycle()
+    val shareTitle = stringResource(id = R.string.share)
 
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
@@ -147,15 +162,17 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                     
                     Spacer(modifier = Modifier.weight(1f))
                     
-                    Text(
-                        text = stringResource(id = R.string.open_document),
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        modifier = Modifier
-                            .clickable { openLauncher.launch(arrayOf("application/pdf")) }
-                            .padding(16.dp),
-                        color = Color.White
-                    )
+                    IconButton(
+                        onClick = { openLauncher.launch(arrayOf("application/pdf")) },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FileOpen,
+                            contentDescription = stringResource(id = R.string.open_document),
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                     
                     Spacer(modifier = Modifier.height(48.dp))
                 }
@@ -171,44 +188,100 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.zoom_out),
-                            fontSize = 24.sp,
-                            modifier = Modifier
-                                .clickable { scale = (scale - 0.2f).coerceAtLeast(1f) }
-                                .padding(12.dp),
-                            color = Color.White
-                        )
-                        
-                        Text(
-                            text = stringResource(id = R.string.zoom_in),
-                            fontSize = 24.sp,
-                            modifier = Modifier
-                                .clickable { scale = (scale + 0.2f).coerceAtMost(5f) }
-                                .padding(12.dp),
-                            color = Color.White
-                        )
+                        IconButton(
+                            onClick = { scale = (scale - 0.2f).coerceAtLeast(1f) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ZoomOut,
+                                contentDescription = stringResource(id = R.string.zoom_out),
+                                tint = Color.White
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { scale = (scale + 0.2f).coerceAtMost(5f) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ZoomIn,
+                                contentDescription = stringResource(id = R.string.zoom_in),
+                                tint = Color.White
+                            )
+                        }
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        Text(
-                            text = stringResource(id = R.string.save_copy),
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .clickable { 
-                                    saveLauncher.launch("copy.pdf")
+                        IconButton(
+                            onClick = { saveLauncher.launch("copy.pdf") }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ContentCopy,
+                                contentDescription = stringResource(id = R.string.save_copy),
+                                tint = Color.White
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { 
+                                viewModel.currentUri?.let { uri ->
+                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "application/pdf"
+                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(Intent.createChooser(shareIntent, shareTitle))
                                 }
-                                .padding(12.dp),
-                            color = Color.White
-                        )
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = stringResource(id = R.string.share),
+                                tint = Color.White
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { viewModel.toggleDarkMode(userPreferences.isDarkMode) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.InvertColors,
+                                contentDescription = stringResource(id = R.string.pdf_dark_mode),
+                                tint = if (userPreferences.isDarkMode) Color.Cyan else Color.White
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { viewModel.toggleContinuousMode(userPreferences.isContinuousMode) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ViewStream,
+                                contentDescription = stringResource(id = R.string.continuous_scroll),
+                                tint = if (userPreferences.isContinuousMode) Color.Cyan else Color.White
+                            )
+                        }
                     }
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
+                            .background(if (userPreferences.isDarkMode) Color.Black else Color.DarkGray)
                             .transformable(state = state)
                     ) {
+                        val colorMatrix = remember(userPreferences.isDarkMode) {
+                            if (userPreferences.isDarkMode) {
+                                ColorMatrix(
+                                    floatArrayOf(
+                                        -1f, 0f, 0f, 0f, 255f,
+                                        0f, -1f, 0f, 0f, 255f,
+                                        0f, 0f, -1f, 0f, 255f,
+                                        0f, 0f, 0f, 1f, 0f
+                                    )
+                                )
+                            } else {
+                                ColorMatrix()
+                            }
+                        }
+
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -226,8 +299,12 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                                     contentDescription = null,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(vertical = 8.dp, horizontal = 16.dp),
-                                    contentScale = ContentScale.FillWidth
+                                        .padding(
+                                            vertical = if (userPreferences.isContinuousMode) 0.dp else 8.dp,
+                                            horizontal = if (userPreferences.isContinuousMode) 0.dp else 16.dp
+                                        ),
+                                    contentScale = ContentScale.FillWidth,
+                                    colorFilter = ColorFilter.colorMatrix(colorMatrix)
                                 )
                             }
                             
@@ -246,7 +323,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                                     Text(
                                         text = stringResource(id = R.string.close),
                                         fontSize = 12.sp,
-                                        color = Color.Gray
+                                        color = if (userPreferences.isDarkMode) Color.LightGray else Color.Gray
                                     )
                                 }
                             }

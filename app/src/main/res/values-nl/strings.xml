@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">LighPDF</string>
-    <string name="light_pdf">LICHT PDF</string>
+    <string name="light_pdf">LighPDF Viewer</string>
     <string name="open_document">DOCUMENT OPENEN</string>
     <string name="save_copy">KOPIE OPSLAAN</string>
     <string name="zoom_in">+</string>
     <string name="zoom_out">-</string>
     <string name="close">SLUITEN</string>
+    <string name="pdf_dark_mode">Donkere Modus</string>
+    <string name="continuous_scroll">Continu Scrollen</string>
+    <string name="share">Delen</string>
 </resources>

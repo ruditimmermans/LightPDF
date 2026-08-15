@@ -1,19 +1,44 @@
 package com.light.lighpdf
 
+import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class PdfViewerViewModel : ViewModel() {
+class PdfViewerViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = UserPreferencesRepository(application)
+
+    val userPreferencesFlow: StateFlow<UserPreferences> = repository.userPreferencesFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = UserPreferences(isDarkMode = false, isContinuousMode = false)
+        )
+
     val pages = mutableStateListOf<Bitmap>()
     var currentUri: Uri? = null
+
+    fun toggleDarkMode(currentValue: Boolean) {
+        viewModelScope.launch {
+            repository.updateDarkMode(!currentValue)
+        }
+    }
+
+    fun toggleContinuousMode(currentValue: Boolean) {
+        viewModelScope.launch {
+            repository.updateContinuousMode(!currentValue)
+        }
+    }
 
     fun loadPdf(context: Context, uri: Uri) {
         currentUri = uri
