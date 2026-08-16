@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +24,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.InvertColors
@@ -312,19 +313,23 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(32.dp)
-                                        .clickable { 
+                                        .padding(32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    IconButton(
+                                        onClick = { 
                                             viewModel.pages.clear()
                                             scale = 1f
                                             offset = Offset.Zero
                                         },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.close),
-                                        fontSize = 12.sp,
-                                        color = if (userPreferences.isDarkMode) Color.LightGray else Color.Gray
-                                    )
+                                        modifier = Modifier.background(Color.Black, CircleShape)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Close,
+                                            contentDescription = stringResource(id = R.string.close),
+                                            tint = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }
