@@ -1,4 +1,4 @@
-val appVersionName = "1.1.2"
+val appVersionName = "1.1.3"
 
 plugins {
     alias(libs.plugins.android.application)
@@ -17,7 +17,7 @@ android {
         applicationId = "com.light.lighpdf"
         minSdk = 34
         targetSdk = 37
-        versionCode = 4
+        versionCode = 5
         versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

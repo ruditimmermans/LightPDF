@@ -147,8 +147,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                     Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = null,
-                        modifier = Modifier.size(120.dp),
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.White)
+                        modifier = Modifier.size(120.dp)
                     )
                     
                     Spacer(modifier = Modifier.height(24.dp))

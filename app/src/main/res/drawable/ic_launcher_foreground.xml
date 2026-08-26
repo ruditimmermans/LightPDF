@@ -3,11 +3,34 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Minimalist Document Icon -->
+
+    <!-- White Circle Outline -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,24 L64,24 L74,34 L74,84 L34,84 Z" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:pathData="M54,54m-42,0a42,42 0,1 1,84 0a42,42 0,1 1,-84 0" />
+
+    <!-- Document Body (Grey) -->
+    <path
+        android:fillColor="#D0D0D0"
+        android:pathData="M35,32 L60,32 L73,45 L73,76 L35,76 Z" />
+
+    <!-- Dog-ear (Folded corner) -->
+    <path
+        android:fillColor="#A0A0A0"
+        android:pathData="M60,32 L60,45 L73,45 Z" />
+
+    <!-- "PDF" Text using simplified paths -->
+    <!-- P -->
     <path
         android:fillColor="#000000"
-        android:pathData="M64,24 L64,34 L74,34 Z" />
+        android:pathData="M40,52 L47,52 C49,52 50,53 50,55 C50,57 49,58 47,58 L43,58 L43,65 L40,65 Z M43,55 L43,56 L47,56 C47,56 47,55 47,55 C47,55 47,55 47,55 L43,55 Z" />
+    <!-- D -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M52,52 L57,52 C60,52 62,54 62,58.5 C62,63 60,65 57,65 L52,65 Z M55,55 L55,62 L57,62 C58.5,62 59,61 59,58.5 C59,56 58.5,55 57,55 L55,55 Z" />
+    <!-- F -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M65,52 L72,52 L72,55 L68,55 L68,57 L71,57 L71,59 L68,59 L68,65 L65,65 Z" />
 </vector>
