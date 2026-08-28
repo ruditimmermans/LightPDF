@@ -34,6 +34,7 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.ViewStream
 import androidx.compose.material.icons.rounded.ZoomIn
 import androidx.compose.material.icons.rounded.ZoomOut
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -55,10 +56,12 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -96,10 +99,22 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
 
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
+    var containerSize by remember { mutableStateOf(IntSize.Zero) }
 
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 5f)
-        offset += offsetChange
+        val newScale = (scale * zoomChange).coerceIn(1f, 5f)
+        val newOffset = if (newScale > 1f) {
+            val maxX = (containerSize.width * (newScale - 1)) / 2f
+            val maxY = (containerSize.height * (newScale - 1)) / 2f
+            Offset(
+                x = (offset.x + offsetChange.x).coerceIn(-maxX, maxX),
+                y = (offset.y + offsetChange.y).coerceIn(-maxY, maxY)
+            )
+        } else {
+            Offset.Zero
+        }
+        scale = newScale
+        offset = newOffset
     }
 
     LaunchedEffect(intent) {
@@ -132,14 +147,14 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             if (viewModel.pages.isEmpty()) {
                 // Landing Screen (LightOS Minimalist)
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.weight(1f))
@@ -183,13 +198,17 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.Black)
-                            .zIndex(1f)
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(top = innerPadding.calculateTopPadding())
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .zIndex(2f),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
-                            onClick = { scale = (scale - 0.2f).coerceAtLeast(1f) }
+                            onClick = { 
+                                scale = (scale - 0.2f).coerceAtLeast(1f)
+                                if (scale == 1f) offset = Offset.Zero
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.ZoomOut,
@@ -259,12 +278,15 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                             )
                         }
                     }
+                    
+                    HorizontalDivider(color = Color.DarkGray, thickness = 0.5.dp)
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                             .background(if (userPreferences.isDarkMode) Color.Black else Color.DarkGray)
+                            .onSizeChanged { containerSize = it }
                             .transformable(state = state)
                     ) {
                         val colorMatrix = remember(userPreferences.isDarkMode) {
@@ -312,6 +334,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel(), intent: Intent? = nu
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .padding(bottom = innerPadding.calculateBottomPadding())
                                         .padding(32.dp),
                                     contentAlignment = Alignment.Center
                                 ) {

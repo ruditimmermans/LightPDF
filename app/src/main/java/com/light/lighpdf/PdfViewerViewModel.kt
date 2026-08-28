@@ -52,8 +52,8 @@ class PdfViewerViewModel(application: Application) : AndroidViewModel(applicatio
                 for (i in 0 until renderer.pageCount) {
                     val page = renderer.openPage(i)
                     // Higher quality scale
-                    val width = page.width * 2
-                    val height = page.height * 2
+                    val width = page.width * 4
+                    val height = page.height * 4
                     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                     bitmap.eraseColor(android.graphics.Color.WHITE)
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
