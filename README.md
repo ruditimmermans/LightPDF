@@ -1,6 +1,6 @@
 # LightPDF
 
-An LightOS PDF viewer tool that helps you read your PDF files on your Light Phone 3.
+An LightOS PDF viewer tool that helps you read your PDF files on your Android Phone.
 
 ## Screenshots 📷
 
