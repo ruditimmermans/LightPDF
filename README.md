@@ -2,6 +2,8 @@
 
 An LightOS PDF viewer tool that helps you read your PDF files on your Android Phone.
 
+[IMPORTANT INFO] My apps are no longer specifically designed for the Light Phone 3, as I have sold the device; all my apps are now being updated for Android 15 and up. However, they will retain the same look and feel.
+
 ## Screenshots 📷
 
 <img width="2160" height="900" alt="image" src="https://github.com/ruditimmermans/LightPDF/blob/main/screenshots/combined.png" />
