@@ -21,4 +21,13 @@
     <string name="file_saved">File saved successfully</string>
     <string name="page_number">Page number</string>
     <string name="remove">Remove</string>
+    <string name="about">About</string>
+    <string name="version_format">Version: %1$s</string>
+    <string name="support_and_development">Support &amp; Development</string>
+    <string name="donate_to_app">Donate to LightPDF</string>
+    <string name="support_on_kofi">Support the developer on Ko-fi</string>
+    <string name="report_issues">Report issues</string>
+    <string name="legal_information">Legal Information</string>
+    <string name="copyright_notice">Copyright 2026–2027 by Rudi Timmermans</string>
+    <string name="gpl_license_text">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses.</string>
 </resources>

@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,20 +40,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.BugReport
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FileOpen
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.InvertColors
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Numbers
+import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.ViewStream
 import androidx.compose.material.icons.rounded.Warning
@@ -93,6 +100,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -138,6 +146,8 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
     val pdfState by viewModel.pdfState.collectAsStateWithLifecycle()
     val userPreferences by viewModel.userPreferencesFlow.collectAsStateWithLifecycle()
 
+    var showAboutScreen by remember { mutableStateOf(false) }
+
     val activity = context as? ComponentActivity
     val currentIntent = activity?.intent
 
@@ -151,6 +161,11 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let { viewModel.loadPdf(context, it) }
+    }
+
+    if (showAboutScreen) {
+        AboutScreen(onBack = { showAboutScreen = false })
+        return
     }
 
     Scaffold(
@@ -169,7 +184,8 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
                         onOpenDocument = { openLauncher.launch(arrayOf("application/pdf")) },
                         onSelectRecentFile = { uriString -> viewModel.loadPdf(context, uriString.toUri()) },
                         onRemoveRecentFile = { uriString -> viewModel.removeRecentFile(uriString) },
-                        onClearRecentFiles = { viewModel.clearRecentFiles() }
+                        onClearRecentFiles = { viewModel.clearRecentFiles() },
+                        onOpenAbout = { showAboutScreen = true }
                     )
                 }
 
@@ -203,6 +219,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
                         onSelectRecentFile = { uriString -> viewModel.loadPdf(context, uriString.toUri()) },
                         onRemoveRecentFile = { uriString -> viewModel.removeRecentFile(uriString) },
                         onClearRecentFiles = { viewModel.clearRecentFiles() },
+                        onOpenAbout = { showAboutScreen = true },
                         errorMessage = state.message,
                         onDismissError = { viewModel.closePdf() }
                     )
@@ -213,7 +230,8 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
                         state = state,
                         userPreferences = userPreferences,
                         viewModel = viewModel,
-                        onClose = { viewModel.closePdf() }
+                        onClose = { viewModel.closePdf() },
+                        onOpenAbout = { showAboutScreen = true }
                     )
                 }
             }
@@ -228,6 +246,7 @@ fun LandingScreen(
     onSelectRecentFile: (String) -> Unit,
     onRemoveRecentFile: (String) -> Unit,
     onClearRecentFiles: () -> Unit,
+    onOpenAbout: () -> Unit,
     errorMessage: String? = null,
     onDismissError: (() -> Unit)? = null
 ) {
@@ -237,7 +256,22 @@ fun LandingScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(36.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            IconButton(onClick = onOpenAbout) {
+                Icon(
+                    imageVector = Icons.Rounded.Info,
+                    contentDescription = stringResource(id = R.string.about),
+                    tint = Color.Gray
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
@@ -456,7 +490,8 @@ fun PdfViewerScreen(
     state: PdfDocumentState.Success,
     userPreferences: UserPreferences,
     viewModel: PdfViewerViewModel,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onOpenAbout: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -756,6 +791,23 @@ fun PdfViewerScreen(
                                     showMoreMenu = false
                                 }
                             )
+
+                            HorizontalDivider(color = Color(0xFF333333))
+
+                            DropdownMenuItem(
+                                text = { Text(stringResource(id = R.string.about), color = Color.White) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Info,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                },
+                                onClick = {
+                                    showMoreMenu = false
+                                    onOpenAbout()
+                                }
+                            )
                         }
                     }
                 }
@@ -868,6 +920,206 @@ fun PdfViewerScreen(
                 shape = RoundedCornerShape(16.dp)
             )
         }
+    }
+}
+
+@Composable
+fun AboutScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val versionName = remember {
+        try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            pInfo.versionName ?: "1.1.4"
+        } catch (e: Exception) {
+            "1.1.4"
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Black
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            // Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = stringResource(id = R.string.back),
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(id = R.string.about),
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(48.dp))
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
+            ) {
+                // Header Card
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF23242A)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 28.dp, horizontal = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            contentDescription = null,
+                            modifier = Modifier.size(80.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(id = R.string.app_name),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(id = R.string.version_format, versionName),
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Section 1: Support & Development
+                Text(
+                    text = stringResource(id = R.string.support_and_development),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF8C9EFF),
+                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                )
+
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFF333540)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF18191E)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        // Ko-fi row
+                        AboutActionRow(
+                            icon = Icons.Rounded.OpenInNew,
+                            title = stringResource(id = R.string.support_on_kofi),
+                            onClick = { openUrl(context, "https://ko-fi.com/ruditimmermans") }
+                        )
+
+                        HorizontalDivider(color = Color(0xFF2A2C36), thickness = 1.dp)
+
+                        // Report issues row
+                        AboutActionRow(
+                            icon = Icons.Rounded.BugReport,
+                            title = stringResource(id = R.string.report_issues),
+                            onClick = { openUrl(context, "https://github.com/ruditimmermans/LightPDF/issues") }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Section 2: Legal Information
+                Text(
+                    text = stringResource(id = R.string.legal_information),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF8C9EFF),
+                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                )
+
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color(0xFF333540)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF18191E)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.copyright_notice),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(id = R.string.gpl_license_text),
+                            fontSize = 13.sp,
+                            color = Color(0xFFB0B3C2),
+                            lineHeight = 19.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AboutActionRow(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(14.dp))
+        Text(
+            text = title,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+fun openUrl(context: Context, url: String) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
     }
 }
 
