@@ -3,10 +3,22 @@
     <string name="light_pdf">LightPDF Viewer</string>
     <string name="open_document">DOCUMENT OPENEN</string>
     <string name="save_copy">KOPIE OPSLAAN</string>
-    <string name="zoom_in">+</string>
-    <string name="zoom_out">-</string>
+    <string name="zoom_in">Inzoomen</string>
+    <string name="zoom_out">Uitzoomen</string>
     <string name="close">SLUITEN</string>
     <string name="pdf_dark_mode">Donkere Modus</string>
     <string name="continuous_scroll">Continu Scrollen</string>
     <string name="share">Delen</string>
+    <string name="recent_files">Recente Documenten</string>
+    <string name="clear_history">Geschiedenis wis</string>
+    <string name="no_recent_files">Geen recente documenten</string>
+    <string name="page_indicator">Pagina %1$d van %2$d</string>
+    <string name="go_to_page">Ga naar pagina</string>
+    <string name="cancel">Annuleren</string>
+    <string name="go">Ga</string>
+    <string name="error_loading_pdf">Laden van PDF-document mislukt.</string>
+    <string name="back">Terug</string>
+    <string name="file_saved">Bestand succesvol opgeslagen</string>
+    <string name="page_number">Paginanummer</string>
+    <string name="remove">Verwijderen</string>
 </resources>

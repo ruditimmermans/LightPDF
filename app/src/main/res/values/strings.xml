@@ -3,10 +3,22 @@
     <string name="light_pdf">LightPDF Viewer</string>
     <string name="open_document">OPEN DOCUMENT</string>
     <string name="save_copy">SAVE COPY</string>
-    <string name="zoom_in">+</string>
-    <string name="zoom_out">-</string>
+    <string name="zoom_in">Zoom In</string>
+    <string name="zoom_out">Zoom Out</string>
     <string name="close">CLOSE</string>
     <string name="pdf_dark_mode">Dark Mode</string>
     <string name="continuous_scroll">Continuous Scroll</string>
     <string name="share">Share</string>
+    <string name="recent_files">Recent Documents</string>
+    <string name="clear_history">Clear History</string>
+    <string name="no_recent_files">No recent documents</string>
+    <string name="page_indicator">Page %1$d of %2$d</string>
+    <string name="go_to_page">Jump to Page</string>
+    <string name="cancel">Cancel</string>
+    <string name="go">Go</string>
+    <string name="error_loading_pdf">Could not open PDF file. It might be corrupted or protected.</string>
+    <string name="back">Back</string>
+    <string name="file_saved">File saved successfully</string>
+    <string name="page_number">Page number</string>
+    <string name="remove">Remove</string>
 </resources>
