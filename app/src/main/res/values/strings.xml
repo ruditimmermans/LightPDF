@@ -2,6 +2,7 @@
     <string name="app_name">LightPDF</string>
     <string name="light_pdf">LightPDF Viewer</string>
     <string name="open_document">OPEN DOCUMENT</string>
+    <string name="opening_document">Opening document…</string>
     <string name="save_copy">SAVE COPY</string>
     <string name="zoom_in">Zoom In</string>
     <string name="zoom_out">Zoom Out</string>
@@ -30,4 +31,11 @@
     <string name="legal_information">Legal Information</string>
     <string name="copyright_notice">Copyright 2026–2027 by Rudi Timmermans</string>
     <string name="gpl_license_text">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses.</string>
+    <string name="more_options">More Options</string>
+    <string name="could_not_open_browser">Could not open browser</string>
+    <string name="page_x">Page %1$d</string>
+    <string name="just_now">Just now</string>
+    <string name="minutes_ago">%1$dm ago</string>
+    <string name="hours_ago">%1$dh ago</string>
+    <string name="days_ago">%1$dd ago</string>
 </resources>

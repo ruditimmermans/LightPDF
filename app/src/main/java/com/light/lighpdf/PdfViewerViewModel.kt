@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import androidx.annotation.StringRes
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -30,7 +31,7 @@ sealed interface PdfDocumentState {
         val pageSizes: List<Pair<Int, Int>>,
         val loader: PdfPageLoader
     ) : PdfDocumentState
-    data class Error(val uri: Uri, val message: String) : PdfDocumentState
+    data class Error(val uri: Uri, @param:StringRes val messageResId: Int = R.string.error_loading_pdf) : PdfDocumentState
 }
 
 class PdfPageLoader(
@@ -175,7 +176,7 @@ class PdfViewerViewModel(application: Application) : AndroidViewModel(applicatio
             } else {
                 _pdfState.value = PdfDocumentState.Error(
                     uri = uri,
-                    message = "Could not open PDF file. It might be corrupted or protected."
+                    messageResId = R.string.error_loading_pdf
                 )
             }
         }

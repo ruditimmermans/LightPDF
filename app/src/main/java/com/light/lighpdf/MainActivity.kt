@@ -204,7 +204,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = stringResource(id = R.string.open_document) + "...",
+                                text = stringResource(id = R.string.opening_document),
                                 color = Color.Gray,
                                 fontSize = 14.sp
                             )
@@ -220,7 +220,7 @@ fun MainScreen(viewModel: PdfViewerViewModel = viewModel()) {
                         onRemoveRecentFile = { uriString -> viewModel.removeRecentFile(uriString) },
                         onClearRecentFiles = { viewModel.clearRecentFiles() },
                         onOpenAbout = { showAboutScreen = true },
-                        errorMessage = state.message,
+                        errorMessage = stringResource(id = state.messageResId),
                         onDismissError = { viewModel.closePdf() }
                     )
                 }
@@ -466,8 +466,9 @@ fun RecentFileItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
+                val context = LocalContext.current
                 Text(
-                    text = formatTimeAgo(recentFile.timestamp),
+                    text = formatTimeAgo(context, recentFile.timestamp),
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
@@ -692,7 +693,7 @@ fun PdfViewerScreen(
                         IconButton(onClick = { showMoreMenu = true }) {
                             Icon(
                                 imageVector = Icons.Rounded.MoreVert,
-                                contentDescription = "More Options",
+                                contentDescription = stringResource(id = R.string.more_options),
                                 tint = Color.White
                             )
                         }
@@ -1119,7 +1120,7 @@ fun openUrl(context: Context, url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         context.startActivity(intent)
     } catch (e: Exception) {
-        Toast.makeText(context, "Could not open browser", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.could_not_open_browser), Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -1155,7 +1156,7 @@ fun PdfPageItem(
         if (bitmap != null && !bitmap.isRecycled) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
-                contentDescription = "Page ${pageIndex + 1}",
+                contentDescription = stringResource(id = R.string.page_x, pageIndex + 1),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.FillWidth,
                 colorFilter = ColorFilter.colorMatrix(colorMatrix)
@@ -1170,7 +1171,7 @@ fun PdfPageItem(
     }
 }
 
-fun formatTimeAgo(timestamp: Long): String {
+fun formatTimeAgo(context: Context, timestamp: Long): String {
     val diff = System.currentTimeMillis() - timestamp
     val seconds = diff / 1000
     val minutes = seconds / 60
@@ -1178,10 +1179,10 @@ fun formatTimeAgo(timestamp: Long): String {
     val days = hours / 24
 
     return when {
-        seconds < 60 -> "Just now"
-        minutes < 60 -> "${minutes}m ago"
-        hours < 24 -> "${hours}h ago"
-        days < 7 -> "${days}d ago"
+        seconds < 60 -> context.getString(R.string.just_now)
+        minutes < 60 -> context.getString(R.string.minutes_ago, minutes)
+        hours < 24 -> context.getString(R.string.hours_ago, hours)
+        days < 7 -> context.getString(R.string.days_ago, days)
         else -> {
             val sdf = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
             sdf.format(Date(timestamp))
