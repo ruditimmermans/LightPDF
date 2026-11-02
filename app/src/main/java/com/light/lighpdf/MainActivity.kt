@@ -12,8 +12,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
@@ -94,6 +96,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -540,88 +543,16 @@ fun PdfViewerScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(if (userPreferences.isDarkMode) Color.Black else Color(0xFF222222))
-            .onSizeChanged { containerSize = it }
     ) {
-        // PDF Pages View
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .transformable(state = transformState)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { showControls = !showControls },
-                        onDoubleTap = {
-                            if (scale > 1f) {
-                                scale = 1f
-                                offset = Offset.Zero
-                            } else {
-                                scale = 2.5f
-                            }
-                        }
-                    )
-                }
-        ) {
-            val colorMatrix = remember(userPreferences.isDarkMode) {
-                if (userPreferences.isDarkMode) {
-                    ColorMatrix(
-                        floatArrayOf(
-                            -0.85f, 0f, 0f, 0f, 255f,
-                            0f, -0.85f, 0f, 0f, 255f,
-                            0f, 0f, -0.85f, 0f, 255f,
-                            0f, 0f, 0f, 1f, 0f
-                        )
-                    )
-                } else {
-                    ColorMatrix()
-                }
-            }
-
-            LazyColumn(
-                state = lazyListState,
-                userScrollEnabled = (scale == 1f),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer(
-                        scaleX = scale,
-                        scaleY = scale,
-                        translationX = offset.x,
-                        translationY = offset.y,
-                        clip = true
-                    )
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(64.dp))
-                }
-
-                itemsIndexed(state.pageSizes) { pageIndex, pageSize ->
-                    PdfPageItem(
-                        pageIndex = pageIndex,
-                        pageSize = pageSize,
-                        loader = state.loader,
-                        isContinuousMode = userPreferences.isContinuousMode,
-                        colorMatrix = colorMatrix,
-                        containerWidthPx = if (containerSize.width > 0) containerSize.width else 1080
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(72.dp))
-                }
-            }
-        }
-
         // Top Navigation Bar
         AnimatedVisibility(
             visible = showControls,
-            enter = fadeIn() + slideInVertically { -it },
-            exit = fadeOut() + slideOutVertically { -it },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .zIndex(10f)
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
         ) {
             Column(
                 modifier = Modifier
@@ -713,7 +644,16 @@ fun PdfViewerScreen(
                                     )
                                 },
                                 onClick = {
-                                    scale = (scale + 0.5f).coerceAtMost(5f)
+                                    val newScale = (scale + 0.5f).coerceAtMost(5f)
+                                    if (newScale > 1f && containerSize.width > 0 && containerSize.height > 0) {
+                                        val maxX = (containerSize.width * (newScale - 1)) / 2f
+                                        val maxY = (containerSize.height * (newScale - 1)) / 2f
+                                        offset = Offset(
+                                            x = offset.x.coerceIn(-maxX, maxX),
+                                            y = offset.y.coerceIn(-maxY, maxY)
+                                        )
+                                    }
+                                    scale = newScale
                                     showMoreMenu = false
                                 }
                             )
@@ -728,8 +668,18 @@ fun PdfViewerScreen(
                                     )
                                 },
                                 onClick = {
-                                    scale = (scale - 0.5f).coerceAtLeast(1f)
-                                    if (scale == 1f) offset = Offset.Zero
+                                    val newScale = (scale - 0.5f).coerceAtLeast(1f)
+                                    if (newScale == 1f) {
+                                        offset = Offset.Zero
+                                    } else if (containerSize.width > 0 && containerSize.height > 0) {
+                                        val maxX = (containerSize.width * (newScale - 1)) / 2f
+                                        val maxY = (containerSize.height * (newScale - 1)) / 2f
+                                        offset = Offset(
+                                            x = offset.x.coerceIn(-maxX, maxX),
+                                            y = offset.y.coerceIn(-maxY, maxY)
+                                        )
+                                    }
+                                    scale = newScale
                                     showMoreMenu = false
                                 }
                             )
@@ -816,39 +766,110 @@ fun PdfViewerScreen(
             }
         }
 
-        // Floating Page Pill
-        AnimatedVisibility(
-            visible = showControls && state.pageCount > 1,
-            enter = fadeIn() + slideInVertically { it },
-            exit = fadeOut() + slideOutVertically { it },
+        // PDF Viewport Container
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
-                .zIndex(10f)
+                .weight(1f)
+                .fillMaxWidth()
+                .clipToBounds()
+                .onSizeChanged { containerSize = it }
+                .transformable(state = transformState)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { showControls = !showControls },
+                        onDoubleTap = {
+                            if (scale > 1f) {
+                                scale = 1f
+                                offset = Offset.Zero
+                            } else {
+                                scale = 2.5f
+                            }
+                        }
+                    )
+                }
         ) {
-            Surface(
-                shape = CircleShape,
-                color = Color.Black.copy(alpha = 0.85f),
-                contentColor = Color.White,
-                shadowElevation = 6.dp,
-                modifier = Modifier.clickable { showJumpDialog = true }
+            val colorMatrix = remember(userPreferences.isDarkMode) {
+                if (userPreferences.isDarkMode) {
+                    ColorMatrix(
+                        floatArrayOf(
+                            -0.85f, 0f, 0f, 0f, 255f,
+                            0f, -0.85f, 0f, 0f, 255f,
+                            0f, 0f, -0.85f, 0f, 255f,
+                            0f, 0f, 0f, 1f, 0f
+                        )
+                    )
+                } else {
+                    ColorMatrix()
+                }
+            }
+
+            LazyColumn(
+                state = lazyListState,
+                userScrollEnabled = (scale == 1f),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y,
+                        clip = true
+                    )
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                itemsIndexed(state.pageSizes) { pageIndex, pageSize ->
+                    PdfPageItem(
+                        pageIndex = pageIndex,
+                        pageSize = pageSize,
+                        loader = state.loader,
+                        isContinuousMode = userPreferences.isContinuousMode,
+                        colorMatrix = colorMatrix,
+                        containerWidthPx = if (containerSize.width > 0) containerSize.width else 1080
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+
+            // Floating Page Pill
+            androidx.compose.animation.AnimatedVisibility(
+                visible = showControls && state.pageCount > 1,
+                enter = fadeIn() + slideInVertically { it },
+                exit = fadeOut() + slideOutVertically { it },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp)
+                    .zIndex(10f)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.Black.copy(alpha = 0.85f),
+                    contentColor = Color.White,
+                    shadowElevation = 6.dp,
+                    modifier = Modifier.clickable { showJumpDialog = true }
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Numbers,
-                        contentDescription = null,
-                        tint = Color.Cyan,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(id = R.string.page_indicator, currentVisiblePage, state.pageCount),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Numbers,
+                            contentDescription = null,
+                            tint = Color.Cyan,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(id = R.string.page_indicator, currentVisiblePage, state.pageCount),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
